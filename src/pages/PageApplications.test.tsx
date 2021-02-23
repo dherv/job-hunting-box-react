@@ -7,6 +7,53 @@ describe("PageApplications", () => {
 
   beforeEach(() => render(<PageApplications/>))
 
+  describe("add form", () => {
+    test("should display a add button", () => {
+      expect(screen.getByText("add")).toBeDefined()
+    })
+
+    test("should display a add form on click", async () => {
+      userEvent.click(screen.getByText("add"))
+      await waitFor(() =>  {
+        expect(screen.getByRole("form")).toBeDefined()
+      })
+    })
+
+    test("should display an input for each application field", async () => {
+      userEvent.click(screen.getByText("add"))
+      await waitFor(() =>  {
+        expect(screen.getByLabelText("company")).toBeDefined()
+        expect(screen.getByLabelText("position")).toBeDefined()
+        expect(screen.getByLabelText("send")).toBeDefined()
+        expect(screen.getByLabelText("receive")).toBeDefined()
+        expect(screen.getByLabelText("result")).toBeDefined()
+      })
+    })
+
+    test("should post the form with the right inputs", async () => {
+      userEvent.click(screen.getByText("add"))
+      await waitFor(() => expect(screen.getByRole("form")).toBeDefined())
+      userEvent.type(screen.getByLabelText("company"), "created-company")
+      userEvent.type(screen.getByLabelText("position"), "created-position")
+      userEvent.type(screen.getByLabelText("send"), "created-send")
+      userEvent.type(screen.getByLabelText("receive"), "created-receive")
+      userEvent.type(screen.getByLabelText("result"), "created-result")
+      userEvent.click(screen.getByText("submit"))
+      await waitFor(() => expect(screen.getByText("created-company")).toBeDefined())
+    })
+
+    test("should clear the form after submit", async () => {
+      userEvent.click(screen.getByText("add"))
+      await waitFor(() => expect(screen.getByRole("form")).toBeDefined())
+      userEvent.type(screen.getByLabelText("company"), "created-company")
+      userEvent.click(screen.getByText("submit"))
+      await waitFor(() => expect(screen.getByText("add")).toBeDefined())
+      userEvent.click(screen.getByText("add"))
+      await waitFor(() => expect(screen.queryByDisplayValue("company")).toBeNull())
+    })
+  })
+
+
   describe("table display", () => {
     test("should display a table", () => {
       expect(screen.getByRole("table")).toBeDefined()
@@ -90,5 +137,4 @@ describe("PageApplications", () => {
 
     })
   })
-
 })

@@ -7,3 +7,11 @@ export interface Application {
   receive: string,
   result: boolean
 }
+
+export interface ApplicationBody {
+  company: string,
+  position: string,
+  send: string,
+  receive: string,
+  result: boolean
+}

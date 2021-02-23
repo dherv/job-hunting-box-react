@@ -1,9 +1,11 @@
 import React, {FC, useEffect, useRef, useState} from "react";
 import TemplateApp from "../templates/TemplateApp";
-import {Application} from "../types/interfaces";
+import {Application, ApplicationBody} from "../types/interfaces";
 
 const PageApplications: FC = () => {
   const [applications, setApplications] = useState<Application[]>([])
+  const [createApplication, setCreateApplication] = useState<ApplicationBody>({company: "", position: "", receive: "", send: "", result: false})
+  const [showForm, setShowForm] = useState<boolean>(false)
   const order = useRef<boolean>(true)
   const header = useRef<string>("")
 
@@ -30,15 +32,40 @@ const PageApplications: FC = () => {
 
   }, [])
 
-  const handleClick = (event: React.MouseEvent<HTMLTableHeaderCellElement>) => {
-    if(header.current === event.currentTarget.id) {
-      order.current = !order.current
-    } else {
-      header.current = event.currentTarget.id
-      order.current = true
-    }
 
-    handleSort(event.currentTarget.id, event.currentTarget.dataset.sort)
+  const handleClickAdd = () => {
+    setShowForm(true)
+  }
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const {name, value} = event.currentTarget
+    setCreateApplication(prev => ({...prev, [name]: value}))
+  }
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    const {company, position, send, receive, result} = createApplication
+    try {
+      const created = await fetch("/applications", {method: "POST", body: JSON.stringify({company, position, send, receive, result })}).then(response => response.ok && response.json())
+      setApplications(prev => [...prev, created])
+      setCreateApplication({company: "", position: "", receive: "", send: "", result: false})
+    } catch (e) {
+      console.error(e)
+    }
+    setShowForm(false)
+  }
+
+  const handleClickHeader = (event: React.MouseEvent<HTMLTableHeaderCellElement>) => {
+    if(event.currentTarget.dataset.name && event.currentTarget.dataset.sort) {
+      if(header.current === event.currentTarget.dataset.name) {
+        order.current = !order.current
+      } else {
+        header.current = event.currentTarget.dataset.name
+        order.current = true
+      }
+
+      handleSort(event.currentTarget.dataset.name, event.currentTarget.dataset.sort)
+    }
   }
 
   const handleSort = (parameter: string, sort?: string) => {
@@ -89,14 +116,28 @@ const PageApplications: FC = () => {
   return (
     <TemplateApp>
       <div>my applications</div>
+      {showForm ?
+        <form name="form-create-application">
+          <label htmlFor="company">company</label>
+          <input id="company" name="company" onChange={handleChange}/>
+          <label htmlFor="position">position</label>
+          <input id="position" name="position" onChange={handleChange}/>
+          <label htmlFor="send">send</label>
+          <input id="send" name="send" onChange={handleChange} />
+          <label htmlFor="receive">receive</label>
+          <input id="receive" name="receive" onChange={handleChange} />
+          <label htmlFor="result">result</label>
+          <input id="result" name="result" onChange={handleChange} />
+          <button onClick={handleSubmit}>submit</button>
+        </form> : <button onClick={handleClickAdd}>add</button>}
       <table>
         <thead>
         <tr>
-          <th onClick={handleClick} id="company" data-sort="string">company</th>
-          <th onClick={handleClick} id="position" data-sort="string">position</th>
-          <th onClick={handleClick} id="send" data-sort="date">send</th>
-          <th onClick={handleClick} id="receive" data-sort="date">receive</th>
-          <th onClick={handleClick} id="result" data-sort="boolean">result</th>
+          <th onClick={handleClickHeader} data-name="company" data-sort="string">company</th>
+          <th onClick={handleClickHeader} data-name="position" data-sort="string">position</th>
+          <th onClick={handleClickHeader} data-name="send" data-sort="date">send</th>
+          <th onClick={handleClickHeader} data-name="receive" data-sort="date">receive</th>
+          <th onClick={handleClickHeader} data-name="result" data-sort="boolean">result</th>
         </tr>
         </thead>
         <tbody>
