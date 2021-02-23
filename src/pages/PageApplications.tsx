@@ -1,10 +1,17 @@
 import React, {FC, useEffect, useRef, useState} from "react";
 import TemplateApp from "../templates/TemplateApp";
 import {Application, ApplicationBody} from "../types/interfaces";
+import * as Sentry from "@sentry/react";
 
 const PageApplications: FC = () => {
   const [applications, setApplications] = useState<Application[]>([])
-  const [createApplication, setCreateApplication] = useState<ApplicationBody>({company: "", position: "", receive: "", send: "", result: false})
+  const [createApplication, setCreateApplication] = useState<ApplicationBody>({
+    company: "",
+    position: "",
+    receive: "",
+    send: "",
+    result: false
+  })
   const [showForm, setShowForm] = useState<boolean>(false)
   const order = useRef<boolean>(true)
   const header = useRef<string>("")
@@ -24,7 +31,8 @@ const PageApplications: FC = () => {
         });
     }
 
-    fetchApplications().then(() => {})
+    fetchApplications().then(() => {
+    })
 
     return () => {
       abortController.abort()
@@ -46,7 +54,10 @@ const PageApplications: FC = () => {
     event.preventDefault()
     const {company, position, send, receive, result} = createApplication
     try {
-      const created = await fetch("/applications", {method: "POST", body: JSON.stringify({company, position, send, receive, result })}).then(response => response.ok && response.json())
+      const created = await fetch("/applications", {
+        method: "POST",
+        body: JSON.stringify({company, position, send, receive, result})
+      }).then(response => response.ok && response.json())
       setApplications(prev => [...prev, created])
       setCreateApplication({company: "", position: "", receive: "", send: "", result: false})
     } catch (e) {
@@ -56,8 +67,8 @@ const PageApplications: FC = () => {
   }
 
   const handleClickHeader = (event: React.MouseEvent<HTMLTableHeaderCellElement>) => {
-    if(event.currentTarget.dataset.name && event.currentTarget.dataset.sort) {
-      if(header.current === event.currentTarget.dataset.name) {
+    if (event.currentTarget.dataset.name && event.currentTarget.dataset.sort) {
+      if (header.current === event.currentTarget.dataset.name) {
         order.current = !order.current
       } else {
         header.current = event.currentTarget.dataset.name
@@ -115,45 +126,48 @@ const PageApplications: FC = () => {
 
   return (
     <TemplateApp>
-      <div>my applications</div>
-      {showForm ?
-        <form name="form-create-application">
-          <label htmlFor="company">company</label>
-          <input id="company" name="company" onChange={handleChange}/>
-          <label htmlFor="position">position</label>
-          <input id="position" name="position" onChange={handleChange}/>
-          <label htmlFor="send">send</label>
-          <input id="send" name="send" onChange={handleChange} />
-          <label htmlFor="receive">receive</label>
-          <input id="receive" name="receive" onChange={handleChange} />
-          <label htmlFor="result">result</label>
-          <input id="result" name="result" onChange={handleChange} />
-          <button onClick={handleSubmit}>submit</button>
-        </form> : <button onClick={handleClickAdd}>add</button>}
-      <table>
-        <thead>
-        <tr>
-          <th onClick={handleClickHeader} data-name="company" data-sort="string">company</th>
-          <th onClick={handleClickHeader} data-name="position" data-sort="string">position</th>
-          <th onClick={handleClickHeader} data-name="send" data-sort="date">send</th>
-          <th onClick={handleClickHeader} data-name="receive" data-sort="date">receive</th>
-          <th onClick={handleClickHeader} data-name="result" data-sort="boolean">result</th>
-        </tr>
-        </thead>
-        <tbody>
-        {
-          applications.map(application => (
-            <tr key={application.id}>
-              <td>{application.company}</td>
-              <td>{application.position}</td>
-              <td>{application.send}</td>
-              <td>{application.receive}</td>
-              <td>{application.result ? 'Yes!' : 'No'}</td>
-            </tr>
-          ))
-        }
-        </tbody>
-      </table>
+      <Sentry.ErrorBoundary fallback={"An error has occurred"}>
+
+        <div>my applications</div>
+        {showForm ?
+          <form name="form-create-application">
+            <label htmlFor="company">company</label>
+            <input id="company" name="company" onChange={handleChange}/>
+            <label htmlFor="position">position</label>
+            <input id="position" name="position" onChange={handleChange}/>
+            <label htmlFor="send">send</label>
+            <input id="send" name="send" onChange={handleChange}/>
+            <label htmlFor="receive">receive</label>
+            <input id="receive" name="receive" onChange={handleChange}/>
+            <label htmlFor="result">result</label>
+            <input id="result" name="result" onChange={handleChange}/>
+            <button onClick={handleSubmit}>submit</button>
+          </form> : <button onClick={handleClickAdd}>add</button>}
+        <table>
+          <thead>
+          <tr>
+            <th onClick={handleClickHeader} data-name="company" data-sort="string">company</th>
+            <th onClick={handleClickHeader} data-name="position" data-sort="string">position</th>
+            <th onClick={handleClickHeader} data-name="send" data-sort="date">send</th>
+            <th onClick={handleClickHeader} data-name="receive" data-sort="date">receive</th>
+            <th onClick={handleClickHeader} data-name="result" data-sort="boolean">result</th>
+          </tr>
+          </thead>
+          <tbody>
+          {
+            applications.map(application => (
+              <tr key={application.id}>
+                <td>{application.company}</td>
+                <td>{application.position}</td>
+                <td>{application.send}</td>
+                <td>{application.receive}</td>
+                <td>{application.result ? 'Yes!' : 'No'}</td>
+              </tr>
+            ))
+          }
+          </tbody>
+        </table>
+      </Sentry.ErrorBoundary>
     </TemplateApp>)
 }
 

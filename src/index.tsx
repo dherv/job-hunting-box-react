@@ -2,7 +2,20 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
+import * as Sentry from "@sentry/react";
+import { Integrations } from "@sentry/tracing";
 import reportWebVitals from './reportWebVitals';
+
+
+console.log(process.env.REACT_APP_SENTRY_DSN)
+Sentry.init({
+  dsn: process.env.REACT_APP_SENTRY_DSN,
+  integrations: [new Integrations.BrowserTracing()],
+
+  // We recommend adjusting this value in production, or using tracesSampler
+  // for finer control
+  tracesSampleRate: 1.0,
+});
 
 if (process.env.NODE_ENV === 'development') {
   const { worker } = require('./mocks/browser')
