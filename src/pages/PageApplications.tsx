@@ -28,6 +28,7 @@ const PageApplications: FC = () => {
             return
           }
           console.error(error)
+          Sentry.captureException(error);
         });
     }
 
@@ -62,6 +63,7 @@ const PageApplications: FC = () => {
       setCreateApplication({company: "", position: "", receive: "", send: "", result: false})
     } catch (e) {
       console.error(e)
+      Sentry.captureException(e);
     }
     setShowForm(false)
   }
